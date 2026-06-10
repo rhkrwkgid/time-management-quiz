@@ -172,6 +172,26 @@
   }
   .reset-btn:hover { background: #F5F7FA; color: #1A2E4A; }
 
+  /* QR 코드 */
+  .qr-section {
+    text-align: center;
+    margin: 1.5rem 0 1rem;
+    padding: 1.25rem;
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #E8EDF2;
+  }
+  .qr-section p {
+    font-size: 13px;
+    color: #8A9AB0;
+    margin-bottom: 10px;
+  }
+  .qr-section canvas {
+    display: block;
+    margin: 0 auto;
+    border-radius: 6px;
+  }
+
   /* 푸터 */
   .footer {
     text-align: center;
@@ -237,6 +257,11 @@
   </div>
 
   <button class="reset-btn" onclick="resetAll()">↺ &nbsp;다시 진단하기</button>
+
+  <div class="qr-section">
+    <p>📱 친구에게 공유하기</p>
+    <canvas id="qr-canvas"></canvas>
+  </div>
 
   <div class="footer">
     성과관리 × 시간관리 &nbsp;|&nbsp; 재취업 준비 집합교육 참여자용
@@ -374,6 +399,26 @@ function resetAll(){
 
 renderItems();
 updateTotal();
+
+// QR 코드 생성
+(function(){
+  const url = 'https://rhkrwkgid.github.io/time-management-quiz/';
+  const canvas = document.getElementById('qr-canvas');
+  const size = 160;
+  canvas.width = size;
+  canvas.height = size;
+
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js';
+  script.onload = () => {
+    QRCode.toCanvas(canvas, url, {
+      width: size,
+      margin: 2,
+      color: { dark: '#1A2E4A', light: '#ffffff' }
+    });
+  };
+  document.head.appendChild(script);
+})();
 </script>
 </body>
 </html>
