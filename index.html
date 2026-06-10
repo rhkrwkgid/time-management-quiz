@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나의 시간관리 역량 진단</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #F5F7FA;
+    color: #1A2E4A;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  /* 헤더 */
+  .header {
+    background: #1A2E4A;
+    border-radius: 14px;
+    padding: 1.75rem 2rem;
+    margin-bottom: 1.5rem;
+    color: #fff;
+  }
+  .header-badge {
+    display: inline-block;
+    background: #1E6B5A;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 3px 12px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .header p  { font-size: 13px; color: #8A9AB0; line-height: 1.6; }
+  .score-guide {
+    display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;
+  }
+  .score-guide span {
+    background: rgba(255,255,255,0.1);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: #D0DAE8;
+  }
+
+  /* 문항 */
+  .item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid #E8EDF2;
+    transition: border-color .15s;
+  }
+  .item.answered { border-color: #B8D8CE; }
+
+  .cat-tag {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .q-text {
+    flex: 1;
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: #1A2E4A;
+  }
+  .q-num { color: #8A9AB0; margin-right: 4px; font-size: 12px; }
+  .btns { display: flex; gap: 4px; flex-shrink: 0; }
+  .btn {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 1.5px solid #D0DAE8;
+    background: #F5F7FA;
+    font-size: 12px;
+    font-weight: 600;
+    color: #8A9AB0;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .12s;
+  }
+  .btn:hover { border-color: #8A9AB0; color: #1A2E4A; }
+  .btn.active { color: #fff; border-color: transparent; }
+
+  /* 합계 바 */
+  .total-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    border: 1px solid #E8EDF2;
+  }
+  .total-row { display: flex; align-items: center; gap: 20px; }
+  .total-score { font-size: 48px; font-weight: 700; color: #1A2E4A; min-width: 70px; line-height: 1; }
+  .total-info { flex: 1; }
+  .total-label { font-size: 16px; font-weight: 700; color: #1A2E4A; margin-bottom: 4px; }
+  .total-desc  { font-size: 12px; color: #8A9AB0; line-height: 1.5; }
+  .progress-wrap { margin-top: 12px; }
+  .progress-track { height: 8px; background: #E8EDF2; border-radius: 4px; overflow: hidden; }
+  .progress-fill  { height: 100%; border-radius: 4px; transition: width .4s ease, background .4s; }
+  .progress-labels {
+    display: flex; justify-content: space-between;
+    font-size: 10px; color: #B0BAC8; margin-top: 4px;
+  }
+
+  /* 유형 카드 */
+  .types-title { font-size: 14px; font-weight: 700; color: #1A2E4A; margin-bottom: 10px; }
+  .types-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .type-card {
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1.5px solid #E8EDF2;
+    background: #fff;
+    opacity: .45;
+    transition: all .3s;
+  }
+  .type-card.active { opacity: 1; }
+  .type-range {
+    display: inline-block;
+    font-size: 10px; font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 20px;
+    margin-bottom: 7px;
+  }
+  .type-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .type-desc { font-size: 11.5px; color: #5A6A7A; line-height: 1.5; margin-bottom: 8px; }
+  .tips { font-size: 11px; color: #7A8A9A; line-height: 1.8; list-style: none; }
+  .tips li::before { content: "• "; }
+
+  /* 카테고리 분석 */
+  .cat-analysis {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #E8EDF2;
+    display: none;
+  }
+  .cat-analysis.show { display: block; }
+  .cat-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .cat-name { font-size: 12px; font-weight: 700; width: 60px; flex-shrink: 0; }
+  .cat-track { flex: 1; height: 6px; background: #E8EDF2; border-radius: 3px; overflow: hidden; }
+  .cat-fill  { height: 100%; border-radius: 3px; transition: width .5s ease; }
+  .cat-score { font-size: 11px; color: #8A9AB0; width: 30px; text-align: right; }
+
+  /* 리셋 */
+  .reset-btn {
+    width: 100%; padding: 12px;
+    border: 1.5px solid #D0DAE8;
+    border-radius: 10px;
+    background: #fff;
+    color: #8A9AB0;
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: all .15s;
+  }
+  .reset-btn:hover { background: #F5F7FA; color: #1A2E4A; }
+
+  /* 푸터 */
+  .footer {
+    text-align: center;
+    font-size: 11px;
+    color: #B0BAC8;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #E8EDF2;
+  }
+
+  @media (max-width: 480px) {
+    .types-grid { grid-template-columns: 1fr; }
+    .total-score { font-size: 36px; }
+    .btn { width: 26px; height: 26px; font-size: 11px; }
+    .q-text { font-size: 12.5px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-badge">SELF-DIAGNOSIS</div>
+    <h1>나의 시간관리 역량 진단</h1>
+    <p>각 문항을 읽고 나에게 해당하는 점수를 선택하세요.<br>10문항을 모두 완료하면 나의 유형과 추천 액션을 확인할 수 있습니다.</p>
+    <div class="score-guide">
+      <span>1점 — 전혀 아니다</span>
+      <span>2점 — 아닌 편이다</span>
+      <span>3점 — 보통이다</span>
+      <span>4점 — 그런 편이다</span>
+      <span>5점 — 매우 그렇다</span>
+    </div>
+  </div>
+
+  <div id="items-wrap"></div>
+
+  <div class="total-card">
+    <div class="total-row">
+      <div class="total-score" id="total-num">0</div>
+      <div class="total-info">
+        <div class="total-label" id="type-label">문항을 선택해주세요</div>
+        <div class="total-desc"  id="type-desc">10개 문항 × 최대 5점 = 50점 만점</div>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-track">
+        <div class="progress-fill" id="prog-fill" style="width:0%;background:#D0DAE8"></div>
+      </div>
+      <div class="progress-labels">
+        <span>10점</span><span>20점</span><span>30점</span><span>40점</span><span>50점</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat-analysis" id="cat-analysis">
+    <p class="types-title" style="margin-bottom:14px">카테고리별 점수</p>
+    <div id="cat-bars"></div>
+  </div>
+
+  <p class="types-title">유형 해석</p>
+  <div class="types-grid" id="types-grid"></div>
+
+  <button class="reset-btn" onclick="resetAll()">↺ &nbsp;다시 진단하기</button>
+
+  <div class="footer">
+    성과관리 × 시간관리 &nbsp;|&nbsp; 재취업 준비 집합교육 참여자용
+  </div>
+</div>
+
+<script>
+const ITEMS = [
+  {n:1, cat:"계획",   q:"하루를 시작하기 전에 그날 할 일을 미리 정해둔다",           c:"#0F6E56", bg:"#E1F5EE", tc:"#0F6E56"},
+  {n:2, cat:"계획",   q:"일주일 단위로 주요 일정과 목표를 정리한다",                   c:"#0F6E56", bg:"#E1F5EE", tc:"#0F6E56"},
+  {n:3, cat:"우선순위",q:"중요하지만 급하지 않은 일에 시간을 충분히 쓴다",             c:"#993C1D", bg:"#FAECE7", tc:"#993C1D"},
+  {n:4, cat:"우선순위",q:"급한 일에 끌려다니지 않고 중요한 일을 먼저 한다",           c:"#993C1D", bg:"#FAECE7", tc:"#993C1D"},
+  {n:5, cat:"집중",   q:"한 가지 일을 시작하면 정해진 시간 동안 집중해서 마친다",     c:"#185FA5", bg:"#E6F1FB", tc:"#185FA5"},
+  {n:6, cat:"집중",   q:"SNS·메신저 알림 때문에 하던 일을 중단하는 일이 거의 없다",   c:"#185FA5", bg:"#E6F1FB", tc:"#185FA5"},
+  {n:7, cat:"위임",   q:"내가 꼭 해야 할 일과 남에게 맡길 수 있는 일을 구분한다",     c:"#534AB7", bg:"#EEEDFE", tc:"#534AB7"},
+  {n:8, cat:"위임",   q:"무리한 부탁이나 불필요한 회의를 정중히 거절할 수 있다",       c:"#534AB7", bg:"#EEEDFE", tc:"#534AB7"},
+  {n:9, cat:"회고",   q:"하루 또는 일주일을 마무리하며 시간 사용을 돌아본다",          c:"#444441", bg:"#F1EFE8", tc:"#444441"},
+  {n:10,cat:"회고",   q:"시간 낭비 패턴을 알고 있고 개선하려고 노력한다",              c:"#444441", bg:"#F1EFE8", tc:"#444441"},
+];
+
+const TYPES = [
+  {
+    range:"10~19점", label:"시간 재설계 필요",
+    color:"#993C1D", bg:"#FAECE7", activeBorder:"#D85A30",
+    desc:"시간관리 습관이 아직 형성되지 않은 단계입니다. 지금이 변화의 출발점입니다.",
+    tips:["오늘 할 일 3가지를 매일 아침 적기","하루 마감 전 5분 회고 시작","스마트폰 알림 전부 끄기"]
+  },
+  {
+    range:"20~29점", label:"기초 습관 형성 중",
+    color:"#854F0B", bg:"#FAEEDA", activeBorder:"#EF9F27",
+    desc:"부분적으로 시간관리를 하고 있지만 일관성이 아직 부족한 단계입니다.",
+    tips:["주간 계획표 작성 시작","아이젠하워 매트릭스로 우선순위 분류","하루 Deep Work 블록 1개 설정"]
+  },
+  {
+    range:"30~39점", label:"중급 — 도약 직전",
+    color:"#3B6D11", bg:"#EAF3DE", activeBorder:"#639922",
+    desc:"좋은 습관이 있지만 일부 영역에서 개선 여지가 남아 있는 단계입니다.",
+    tips:["약한 카테고리 집중 보완","시간 블록킹을 캘린더에 등록","월 1회 시간 사용 패턴 회고"]
+  },
+  {
+    range:"40~50점", label:"시간관리 마스터",
+    color:"#085041", bg:"#E1F5EE", activeBoard:"#1D9E75",
+    desc:"시간관리 역량이 높은 단계입니다. 이 습관을 재취업에 연결해 보세요.",
+    tips:["나만의 루틴을 이력서 강점으로 활용","후배·동료에게 노하우 공유","재취업 후에도 유지할 루틴 설계"]
+  },
+];
+
+const CATS = ["계획","우선순위","집중","위임","회고"];
+const CAT_COLORS = {"계획":"#0F6E56","우선순위":"#993C1D","집중":"#185FA5","위임":"#534AB7","회고":"#444441"};
+
+let scores = Array(10).fill(0);
+
+function getTypeIdx(t){ return t<=19?0:t<=29?1:t<=39?2:3; }
+
+function renderItems(){
+  document.getElementById('items-wrap').innerHTML = ITEMS.map((it,i) => `
+    <div class="item${scores[i]>0?' answered':''}" id="item-${i}">
+      <span class="cat-tag" style="background:${it.bg};color:${it.tc}">${it.cat}</span>
+      <span class="q-text"><span class="q-num">${it.n}.</span>${it.q}</span>
+      <div class="btns">
+        ${[1,2,3,4,5].map(s=>`
+          <button class="btn${scores[i]===s?' active':''}"
+            style="${scores[i]===s?'background:'+it.c+';border-color:'+it.c:''}"
+            onclick="pick(${i},${s})">${s}</button>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function renderTypes(total, answered){
+  const ti = getTypeIdx(total);
+  document.getElementById('types-grid').innerHTML = TYPES.map((t,i) => `
+    <div class="type-card${answered===10&&i===ti?' active':''}"
+      style="${answered===10&&i===ti?'border-color:'+t.activeBoard+';background:'+t.bg:''}">
+      <span class="type-range" style="background:${t.bg};color:${t.color}">${t.range}</span>
+      <div class="type-name" style="color:${answered===10&&i===ti?t.color:'#1A2E4A'}">${t.label}</div>
+      <div class="type-desc">${t.desc}</div>
+      <ul class="tips">${t.tips.map(tp=>`<li>${tp}</li>`).join('')}</ul>
+    </div>`).join('');
+}
+
+function renderCatBars(answered){
+  const wrap = document.getElementById('cat-analysis');
+  if(answered < 4){ wrap.classList.remove('show'); return; }
+  wrap.classList.add('show');
+  const catScores = {};
+  CATS.forEach(c => catScores[c]=0);
+  ITEMS.forEach((it,i) => catScores[it.cat] += scores[i]);
+  document.getElementById('cat-bars').innerHTML = CATS.map(cat => {
+    const s = catScores[cat];
+    const pct = Math.round(s/10*100);
+    return `<div class="cat-row">
+      <span class="cat-name" style="color:${CAT_COLORS[cat]}">${cat}</span>
+      <div class="cat-track"><div class="cat-fill" style="width:${pct}%;background:${CAT_COLORS[cat]}"></div></div>
+      <span class="cat-score">${s}/10</span>
+    </div>`;
+  }).join('');
+}
+
+function updateTotal(){
+  const total = scores.reduce((a,b)=>a+b,0);
+  const answered = scores.filter(s=>s>0).length;
+  document.getElementById('total-num').textContent = total;
+  const pct = Math.round((total-10)/40*100);
+  const fill = document.getElementById('prog-fill');
+  fill.style.width = (answered===0?0:Math.max(2,pct))+'%';
+  if(answered===10){
+    const ti = getTypeIdx(total);
+    fill.style.background = TYPES[ti].activeBoard||TYPES[ti].color;
+    document.getElementById('type-label').textContent = TYPES[ti].label;
+    document.getElementById('type-desc').textContent = '총 '+total+'점 / 50점 만점';
+  } else {
+    fill.style.background = '#B0BAC8';
+    document.getElementById('type-label').textContent = answered>0?`${answered}/10 문항 완료`:'문항을 선택해주세요';
+    document.getElementById('type-desc').textContent = answered>0?`현재 ${total}점 (10문항 완료 시 유형 확인)`:'10개 문항 × 최대 5점 = 50점 만점';
+  }
+  renderTypes(total, answered);
+  renderCatBars(answered);
+}
+
+function pick(i, s){
+  scores[i] = scores[i]===s ? 0 : s;
+  renderItems();
+  updateTotal();
+}
+
+function resetAll(){
+  scores.fill(0);
+  renderItems();
+  updateTotal();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+renderItems();
+updateTotal();
+</script>
+</body>
+</html>
