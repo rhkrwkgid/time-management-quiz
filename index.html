@@ -278,7 +278,7 @@ const TYPES = [
   },
   {
     range:"40~50점", label:"시간관리 마스터",
-    color:"#085041", bg:"#E1F5EE", activeBoard:"#1D9E75",
+    color:"#085041", bg:"#E1F5EE", activeBorder:"#1D9E75",
     desc:"시간관리 역량이 높은 단계입니다. 이 습관을 재취업에 연결해 보세요.",
     tips:["나만의 루틴을 이력서 강점으로 활용","후배·동료에게 노하우 공유","재취업 후에도 유지할 루틴 설계"]
   },
@@ -342,12 +342,14 @@ function updateTotal(){
   const total = scores.reduce((a,b)=>a+b,0);
   const answered = scores.filter(s=>s>0).length;
   document.getElementById('total-num').textContent = total;
-  const pct = Math.round((total-10)/40*100);
+  // 눈금이 10~50점이므로 미응답 문항은 최저 1점으로 보고 계산
+  const projected = total + (10 - answered);
+  const pct = Math.round((projected-10)/40*100);
   const fill = document.getElementById('prog-fill');
-  fill.style.width = (answered===0?0:Math.max(2,pct))+'%';
+  fill.style.width = pct+'%';
   if(answered===10){
     const ti = getTypeIdx(total);
-    fill.style.background = TYPES[ti].activeBoard||TYPES[ti].color;
+    fill.style.background = TYPES[ti].activeBorder||TYPES[ti].color;
     document.getElementById('type-label').textContent = TYPES[ti].label;
     document.getElementById('type-desc').textContent = '총 '+total+'점 / 50점 만점';
   } else {
